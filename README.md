@@ -36,3 +36,27 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Install material
+
+```
+    yarn add @mui/material @emotion/react @emotion/styled
+````
+
+add in the file _document.ts into tag <Head> </Head>
+
+```
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+/>
+```
+
+## install material icons 
+
+```
+yarn add @mui/icons-material
+
+```
+
+
