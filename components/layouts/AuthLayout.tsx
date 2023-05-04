@@ -4,6 +4,7 @@ import  { FC } from 'react';
 
 interface Props {
     title:string;
+    children: string | JSX.Element | JSX.Element[];
 }
 
 const AuthLayout:FC<Props> = ({children, title}) => {

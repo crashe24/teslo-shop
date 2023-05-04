@@ -8,6 +8,7 @@ interface Props {
     title:string;
     pageDescription:string;
     imageFullUrl?:string;
+    children: string | JSX.Element | JSX.Element[];
 
 }
 
