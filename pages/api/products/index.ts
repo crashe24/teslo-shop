@@ -23,7 +23,8 @@ const productApi =  (req: NextApiRequest, res: NextApiResponse<Data>) => {
 const getProducts = async  (req: NextApiRequest, res: NextApiResponse<Data>) => {
 
     const { gender= 'all' } = req.query
-
+    console.log('gender', gender)
+    
     let condition = {}
   //  const genders: string[] = ['kid', 'unisex', 'men', 'women', 'all'] 
     if (gender !== 'all' && SHOP_CONSTANT.validGenders.includes(`${gender}`) ) {
