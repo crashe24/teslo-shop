@@ -71,14 +71,13 @@ export const getServerSideProps: GetServerSideProps = async ({params}) => {
     let products = await dbProducts.getProductsByTerm( query )
 
     const foundProducts = products.length > 0
-
+    
+    // cuando no hay productos
     if ( !foundProducts ) {
         products = await dbProducts.getAllProductsReload()
 
     }
-    // cuando no hay productos
-    // TODO: retornar los productos que le pueden interesar
-    console.log('products === >', products)
+    //console.log('products === >', products)
 
     return {
         props: {

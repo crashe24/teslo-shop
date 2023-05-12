@@ -2,15 +2,11 @@ import ShopLayout from '@/components/layouts/ShopLayout'
 import ProductSlideshow from '@/components/products/ProductSlideshow'
 import ItemCounter from '@/components/ui/ItemCounter'
 import SizeSelector from '@/components/ui/SizeSelector'
-// import { initialData } from '@/database/products'
-// import { useProducts } from '@/hooks'
 import { Box, Button, Chip, Grid, Typography } from '@mui/material'
-//import { useRouter } from 'next/router'
-import { IProduct } from '../../../interfaces/IProduct';
+import { IProduct, ISizes } from '../../../interfaces/IProduct';
 import { NextPage } from 'next'
 import { dbProducts } from '../../../database/index'
 
-//const product = initialData.products[0]
 
 interface Props {
     product: IProduct
@@ -18,19 +14,44 @@ interface Props {
 
 const ProductPage: NextPage<Props> = ({product}) => {
 
-    /**Estrategia 1 */
-  // const router = useRouter()
-  
-  //const {products: product, isLoading} = useProducts(`/products/${router.query.slug}`)
 
-    // if (isLoading) {
-    //     return <h1>Loading...</h1>
-    // }
+    const router = useRouter()
+    const { addProductCart } = useContext(CartContext)
 
-    // if( !product ) {
-    //     return <h1>Not exist</h1>
-    // }
 
+    const [tempCartProduct, settempCartProduct] = useState<ICart>({
+        _id: product._id,
+        image: product.images[0],
+        price: product.price,
+        size: undefined,
+        slug: product.slug,
+        title: product.title,
+        gender: product.gender,
+        quantity: 1,
+    });
+
+
+
+    const selectedSize = (size: ISizes) => {
+      settempCartProduct( currentProduct =>({
+        ...currentProduct, size
+      }))
+    }
+
+    const addProduct = () => {
+        if(!tempCartProduct.size) return 
+        addProductCart(tempCartProduct)
+        router.push('/cart')
+    }
+
+    const updateCuantityValue = (quantity:number) => {
+            settempCartProduct( currentProduct =>({
+                ...currentProduct,
+                quantity
+            }))
+    }
+
+ 
   return (
     <ShopLayout title={ product.title } pageDescription= { product.description}>
             <Grid container spacing={3}>
@@ -47,19 +68,36 @@ const ProductPage: NextPage<Props> = ({product}) => {
                                 ${product.price}
                             </Typography>
                             <Box sx={{my:2}}>
-                                   <Typography variant='subtitle2' >Count</Typography> 
+                                   <Typography variant='subtitle2' >Count available: {product.inStock}</Typography> 
                                    {/* Itmecounter */}
-                                   <ItemCounter />
+                                   <ItemCounter 
+                                   currenValue={tempCartProduct.quantity}
+                                   maxValues={ product.inStock > 5 ? 5: product.inStock}
+                                   updateCuantity={updateCuantityValue} />
+                                 
                                    <SizeSelector
-                                   selectedSize={product.sizes[1]}
-                                   sizes={product.sizes} />
+                                   sizes={product.sizes} 
+                                   selectedSize={tempCartProduct.size }
+                                   onSelectedSize = {  selectedSize}
+                                   />
 
                             </Box>
                             {/* agragar al carrito */}
-                            <Button color='secondary' className='circular-btn'>
-                                Add car
-                            </Button>
-                            {/* <Chip label='No exist' color='error' variant='outlined'></Chip> */}
+                            {
+                                (product.inStock > 0) ? (
+                                                <Button color='secondary' className='circular-btn'
+                                                onClick={addProduct}>
+                                                   { 
+                                                      tempCartProduct.size ? 'Add Cart'
+                                                                           : 'choose a clothing size'
+                                                   }
+                                                </Button>
+                                            ) : (
+                                                <Chip label='No exist' color='error' variant='outlined'></Chip> 
+
+                                            )
+                            }
+                            
                             <Box sx={{ mt:3}}>
                                 <Typography variant='subtitle2'>Description</Typography>
                                 <Typography variant='body2'>{product.description}</Typography>
@@ -124,6 +162,11 @@ const ProductPage: NextPage<Props> = ({product}) => {
   //- The data can be publicly cached (not user-specific).
   //- The page must be pre-rendered (for SEO) and be very fast — getStaticProps generates HTML and JSON files, both of which can be cached by a CDN for performance.
   import { GetStaticProps } from 'next'
+import { useContext, useState } from 'react'
+import { ICart } from '@/interfaces'
+import { useRouter } from 'next/router'
+import { AddCircleOutline } from '@mui/icons-material';
+import { CartContext } from '@/context'
   
   export const getStaticProps: GetStaticProps = async (ctx) => {
 

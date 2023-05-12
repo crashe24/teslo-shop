@@ -6,7 +6,7 @@ import React from 'react'
 
 const CartPage = () => {
   return (
-    <ShopLayout title={'Shhopping cart -3'} pageDescription='Shopping cart'>
+    <ShopLayout title={'Shopping cart -3'} pageDescription='Shopping cart'>
         <Typography variant='h1' component={'h1'}>Shopping Cart </Typography>
             <Grid container>
                 <Grid item xs={12} sm={7}>

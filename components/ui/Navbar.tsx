@@ -3,7 +3,7 @@ import { FC, useContext, useState } from 'react'
 import NextLink from 'next/link'
 import { ClearOutlined, SearchOutlined, ShoppingBagOutlined } from '@mui/icons-material'
 import { useRouter } from 'next/router'
-import { UiContext } from '@/context'
+import { CartContext, UiContext } from '@/context'
 
 const Navbar:FC = () => {
 
@@ -12,6 +12,7 @@ const Navbar:FC = () => {
   const {asPath} = useRouter()
 
   const { toggleSideMenu  } = useContext(UiContext);
+  const {numberOfItems} = useContext(CartContext)
   const router = useRouter()
 
   const [searchTerm, setsearchTerm] = useState('');
@@ -103,7 +104,7 @@ const Navbar:FC = () => {
             <NextLink href='/cart'legacyBehavior  passHref> 
                        <Link>  
                             <IconButton>
-                                <Badge badgeContent={2} color='secondary'>
+                                <Badge badgeContent={ numberOfItems > 9? '+9': numberOfItems } color='secondary'>
                                     <ShoppingBagOutlined />    
                                 </Badge>
                             </IconButton> 

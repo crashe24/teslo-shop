@@ -23,7 +23,7 @@ const productApi =  (req: NextApiRequest, res: NextApiResponse<Data>) => {
 const getProducts = async  (req: NextApiRequest, res: NextApiResponse<Data>) => {
 
     const { gender= 'all' } = req.query
-    console.log('gender', gender)
+   // console.log('gender', gender)
     
     let condition = {}
   //  const genders: string[] = ['kid', 'unisex', 'men', 'women', 'all'] 
@@ -34,7 +34,7 @@ const getProducts = async  (req: NextApiRequest, res: NextApiResponse<Data>) => 
     const  products  = await Product.find(condition)
                                 .select('title images price inStock slug -_id')
                                 .lean()
-    console.log('data', products)
+   // console.log('data', products)
     await db.disconnect()
 
     return res.status(200).json( products )
