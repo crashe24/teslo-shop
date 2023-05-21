@@ -96,6 +96,8 @@ interface Props {
         }
   }
 
+
+  
   const logout = () => {
     Cookies.remove('token')
     Cookies.remove('cart')
