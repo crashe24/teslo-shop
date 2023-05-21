@@ -5,24 +5,41 @@ import { ICart } from '@/interfaces';
 import Cookie from 'js-cookie'
 
 
+
 interface Props {
      children: string | JSX.Element | JSX.Element[];
 }
 
 export interface CartState {
+         isLoaded:boolean;
           cart:ICart[];
           numerOfItems: number;
           subTotal: number;
           tax:number;
           total:number;
+          shippingAdress?: ShippingAdress;
   }
 
+export interface ShippingAdress {
+      firstName: string;
+      lastName: string;
+      address: string;
+      address2: string;
+      zip: string;
+      city: string;
+      country: string;
+      phone: string;
+}
+
+
   export const CART_INITIAL_STATE: CartState = {
+   isLoaded: false,
   cart:[],
   numerOfItems: 0,
   subTotal: 0,
   tax:0,
   total:0,
+  shippingAdress: undefined
    }
 
 
@@ -67,6 +84,24 @@ export interface CartState {
      dispatch({type:'[Cart] - Update order Sumary in cart', payload:ordenSumary})
   }, [state.cart]);
 
+
+useEffect(() => {
+
+   if (Cookie.get('firstName') !== undefined) {
+         const shipAddress = {
+            firstName: Cookie.get('firstName') || '',
+            lastName : Cookie.get('lastName')|| '',
+            address  : Cookie.get('address')|| '',
+            address2 : Cookie.get('address2')|| '',
+            zip      : Cookie.get('zip')|| '',
+            city     : Cookie.get('city')|| '',
+            country  : Cookie.get('country')|| '',
+            phone    : Cookie.get('phone')|| ''
+         }
+      dispatch({type:'[Cart] - Loaded  from Cookie shippingAddress',payload: shipAddress})
+   }
+}, []);
+
   const addProductCart = (cartRef: ICart) => {
      const existProductById = state.cart.some( p => p._id === cartRef._id);
 
@@ -100,12 +135,27 @@ export interface CartState {
      dispatch({type: '[Cart] - Remove  product in cart', payload: cartProduct})
   }
 
+
+  const updateAddress =(  address: ShippingAdress)  => {
+
+         Cookie.set('firstName',address.firstName);
+         Cookie.set('lastName',address.lastName);
+         Cookie.set('address',address.address);
+         Cookie.set('address2',address.address2 || '');
+         Cookie.set('zip',address.zip);
+         Cookie.set('city',address.city);
+         Cookie.set('country',address.country);
+         Cookie.set('phone',address.phone);
+         
+      dispatch({type:'[Cart] - Update shippingAddress', payload:address})
+  }
          return (
              <CartContext.Provider value={{ ...state,
                // methods
                addProductCart,
                updateQuantityPRoduct,
-               onRemoveProductInCart
+               onRemoveProductInCart,
+               updateAddress
              }}>
               {children}
          </CartContext.Provider>
