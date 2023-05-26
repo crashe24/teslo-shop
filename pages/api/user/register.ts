@@ -3,7 +3,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { User } from '@/models';
 import { db } from '@/database';
-import {compareSync, genSaltSync} from 'bcrypt-ts'
+import {hashSync, genSaltSync} from 'bcrypt-ts'
 import { jwtUtil, validations } from '@/utils';
 
 type Data = { message: string }
@@ -26,9 +26,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Data>)
 const registerUser = async (req: NextApiRequest, res: NextApiResponse<Data>) =>{
     
     const {name = '', email ='', password= ''} = req.body as {name: string,email: string, password:string}
-    console.log('email->', email)
+    //console.log('email->', email)
+    //console.log('password->', password)
     await db.connect()
-        //const user = await User.findOne({email})
         const user = await User.findOne({email})
     await db.disconnect()
 
@@ -55,10 +55,10 @@ const registerUser = async (req: NextApiRequest, res: NextApiResponse<Data>) =>{
 
     // create user
     const salt = genSaltSync(10)
-
+    
     const newUser = new User({
         email: email.toLowerCase(),
-        password: compareSync(password, salt),
+        password:hashSync(password, salt),
         role: 'client',
         name
     })
@@ -74,7 +74,7 @@ const registerUser = async (req: NextApiRequest, res: NextApiResponse<Data>) =>{
 
      const token = jwtUtil.signToken(_id, email )
     return res.status(200).json({
-        token,//: '',
+        token,
         user: {
              email, role: 'client', name 
         }

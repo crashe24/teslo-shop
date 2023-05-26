@@ -1,8 +1,10 @@
 
 import { FC, useEffect, useReducer, useRef } from 'react';
 import { CartContext, CartReducer } from './';
-import { ICart } from '@/interfaces';
+import { ICart, IOrder, ShippingAdress } from '@/interfaces';
 import Cookie from 'js-cookie'
+import { tesloapi } from '@/apis';
+import axios from 'axios';
 
 
 
@@ -20,16 +22,7 @@ export interface CartState {
           shippingAdress?: ShippingAdress;
   }
 
-export interface ShippingAdress {
-      firstName: string;
-      lastName: string;
-      address: string;
-      address2: string;
-      zip: string;
-      city: string;
-      country: string;
-      phone: string;
-}
+
 
 
   export const CART_INITIAL_STATE: CartState = {
@@ -149,13 +142,55 @@ useEffect(() => {
          
       dispatch({type:'[Cart] - Update shippingAddress', payload:address})
   }
+
+  const createOrder = async(): Promise<{hasError: boolean; message: string;}> => {
+
+      if (!state.shippingAdress ) {
+         throw new Error('Not exist address shipping')
+      }
+
+      const body: IOrder = {
+         orderItems      : state.cart.map( p => ({
+            ...p,
+            size: p.size!
+         })),
+         shippingAddress : state.shippingAdress,
+         numberOfItems   : state.numerOfItems,
+         subTotal        : state.subTotal,
+         tax             : state.tax,
+         total           : state.total,
+         isPaid          : false
+      }
+
+      try {
+         const { data } = await tesloapi.post<IOrder>('/orders', body)
+         //console.log('data', data)
+         dispatch({type:'[Cart] - Order complete'})
+         return {
+            hasError: false, 
+            message: data._id!
+         }
+      } catch (error) {
+         if (axios.isAxiosError(error)) {
+            return {
+               hasError: true,
+               message: error.response?.data.message
+            }
+         }
+         return {
+            hasError: true,
+            message: 'Error indefined, Speaks with administrator'
+         }
+      }
+  }
          return (
              <CartContext.Provider value={{ ...state,
                // methods
                addProductCart,
                updateQuantityPRoduct,
                onRemoveProductInCart,
-               updateAddress
+               updateAddress,
+               createOrder
              }}>
               {children}
          </CartContext.Provider>

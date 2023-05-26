@@ -28,9 +28,9 @@ const loginUser = async (req: NextApiRequest, res: NextApiResponse<Data>) =>{
     const {email ='', password= ''} = req.body
     await db.connect()
         //const user = await User.findOne({email})
-        console.log('email ->', email)
+      //  console.log('email ->', email)
         const user = await User.findOne({email})
-        console.log('user -> ', user)   
+     //   console.log('user -> ', user)   
     await db.disconnect()
 
     if (!user) {
@@ -45,7 +45,7 @@ const loginUser = async (req: NextApiRequest, res: NextApiResponse<Data>) =>{
 
      const token = jwtUtil.signToken(_id,email)
 
-     console.log('token -> ', token)   
+    // console.log('token -> ', token)   
     return res.status(200).json({
         token,//: '',
         user: {

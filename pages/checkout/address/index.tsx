@@ -1,5 +1,5 @@
 
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import ShopLayout from '@/components/layouts/ShopLayout';
 import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { countries } from '@/utils';
@@ -43,9 +43,23 @@ const AddressPage = () => {
 
     }
 
-    const {register, handleSubmit, formState: {errors}} = useForm<FormData>({
+    const {register, handleSubmit, formState: {errors}, reset} = useForm<FormData>({
         defaultValues: getAddressFromData()
+        // {
+        //     firstName : '',
+        //     lastName : '',
+        //     address : '',
+        //     address2 : '',
+        //     zip : '',
+        //     city : '',
+        //     country : countries[0].code,
+        //     phone : '',
+        // }
     })
+
+    useEffect(() => {
+      reset(getAddressFromData)
+    }, [reset]);
 
     const onRegisterForm = (data: FormData) => {
     //    console.log('data', data)
@@ -181,8 +195,10 @@ const AddressPage = () => {
 
 
 export const getServerSideProps: GetServerSideProps = async ({req}) => {
-    
+    /*
     const { token = ''} = req.cookies
+    console.log('TOKEN -->', req.cookies )
+
     let userId = ''
     let isValidToken = false
     try {
@@ -200,6 +216,7 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
             }
         }
     } 
+    */
 
     return {
         props: {

@@ -1,8 +1,14 @@
-import ShopLayout from '@/components/layouts/ShopLayout';
-import { Chip, Grid, Typography, Link } from '@mui/material';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 import React from 'react';
 import NextLink from 'next/link';
+import { getSession } from 'next-auth/react';
+import ShopLayout from '@/components/layouts/ShopLayout';
+import { Chip, Grid, Typography, Link } from '@mui/material';
+import { GetServerSideProps, NextPage } from 'next'
+
+import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { dbOrders } from '@/database';
+import { IOrder } from '@/interfaces';
+
 
 const columns: GridColDef[] = [
     {field:'id', headerName:'Id', width:100 },
@@ -20,7 +26,7 @@ const columns: GridColDef[] = [
     },
     {field:'view', headerName: 'View Order', width:100, sortable:false,
         renderCell: (params: GridValueGetterParams)=> (
-            <NextLink href={`/orders/${params.row.view}`} legacyBehavior passHref>
+            <NextLink href={`/orders/${params.row.orderId}`} legacyBehavior passHref>
                 <Link underline='always'>
                     View
                 </Link>
@@ -29,22 +35,21 @@ const columns: GridColDef[] = [
         )},
 ]
 
-const rows = [
-    { id:1, paid:true  ,fullname: 'Jorge Leon', view:'123'},
-    { id:2, paid:false ,fullname: 'Gael Leon', view:'1234'},
-    { id:3, paid:true  ,fullname: 'Martin Leon', view:'12345'},
-    { id:4, paid:true  ,fullname: 'Alejandra Cunalata', view:'123444'},
-    { id:5, paid:false ,fullname: 'Oswaldo Leon', view:'123441'},
-    { id:6, paid:true  ,fullname: 'Luisa Sarmiento', view:'123111'},
-    { id:7, paid:true  ,fullname: 'Jorge Cunalata', view:'123122'},
-    { id:8, paid:true  ,fullname: 'Delia Miranda', view:'123123'},
-]
- 
-const HistoryPages = () => {
+interface Props {
+        orders: IOrder[]
+}
+const HistoryPages:NextPage<Props> = ({orders}) => {
+
+   const rows = orders.map( (order, index) => ({
+    id: index +1,
+    paid: order.isPaid,
+    fullname: `${ order.shippingAddress.firstName} ${order.shippingAddress.lastName}`,
+    orderId: order._id
+   }) ) 
   return (
     <ShopLayout title='History orders' pageDescription='Customer history'>
         <Typography variant='h1' component={'h1'}>Orders History</Typography>
-        <Grid container>
+        <Grid container className='fadeIn' >
             <Grid item xs={12} sx={{ height:650, width:'100%'}}>
                 <DataGrid 
                     rows={ rows } 
@@ -60,4 +65,28 @@ const HistoryPages = () => {
   )
 }
 
+
+
+export const getServerSideProps: GetServerSideProps = async ({req}) => {
+   // const { data } = await  // your fetch function here 
+
+   const session: any = await getSession({ req})
+
+   if (!session) {
+    return {
+        redirect: {
+            destination: '/auth/login?p=/orders/history',
+            permanent: false
+        }
+    }
+   }
+
+   const orders = await dbOrders.getOrdersByUser(session.user._id)
+
+    return {
+        props: {
+            orders
+        }
+    }
+}
 export default HistoryPages;

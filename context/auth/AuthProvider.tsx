@@ -6,6 +6,8 @@ import { tesloapi } from '@/apis';
 import  Cookies from 'js-cookie'
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { signOut, useSession } from 'next-auth/react';
+
 
 // props
 interface Props {
@@ -23,16 +25,27 @@ interface Props {
     user: undefined
    }
 
+   /************************* */
    /* componenete principal */
   export const AuthProvider:FC<Props> = ({children}) => {
 
   const router = useRouter()
 
+  const { data, status } = useSession()
+  
   const [state, dispatch] = useReducer(AuthReducer, AUTH_INITIAL_STATE);
-    
-  useEffect(() => {
-    checkToken()
-  }, []);
+
+  
+ useEffect(() => {
+   if (status === 'authenticated') {
+    //console.log('data', data)
+    dispatch({type: '[Auth] - Login', payload:data?.user as IUser})
+   }
+ }, [status, data]);
+
+  // useEffect(() => {
+  //   checkToken()
+  // }, []);
 
   const checkToken = async() => {
     // verificar token
@@ -77,8 +90,7 @@ interface Props {
           Cookies.set('token', token)
           dispatch({type:'[Auth] - Login', payload: user})
 
-          // TODO: return
-          return {
+           return {
             hasError: false,
             
           }
@@ -99,9 +111,8 @@ interface Props {
 
   
   const logout = () => {
-    Cookies.remove('token')
     Cookies.remove('cart')
-
+    
     Cookies.remove('firstName');
     Cookies.remove('lastName');
     Cookies.remove('address');
@@ -110,8 +121,9 @@ interface Props {
     Cookies.remove('city');
     Cookies.remove('country');
     Cookies.remove('phone');
-
-    router.reload()
+    signOut()
+    //router.reload()
+    //Cookies.remove('token')
   }
   return (
              <AuthContext.Provider value={{ 

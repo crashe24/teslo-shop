@@ -1,7 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import NextLink from 'next/link'
 
-import { Box, Button, Card, CardContent, Divider, Grid, Link, Typography } from '@mui/material'
+import Cookies from 'js-cookie'
+import { Box, Button, Card, CardContent, Chip, Divider, Grid, Link, Typography } from '@mui/material'
 
 import { CartContext } from '@/context'
 import ShopLayout from '@/components/layouts/ShopLayout'
@@ -13,7 +15,17 @@ import { countries } from '@/utils'
 
 const SumaryPage = () => {
 
- const {shippingAdress, numberOfItems} = useContext(CartContext)
+ const {shippingAdress, numberOfItems,createOrder} = useContext(CartContext)
+
+ const [isPosting, setisPosting] = useState(false);
+ const [errorMessage, seterrorMessage] = useState('');
+
+ const router = useRouter()
+ useEffect(() => {
+    if( !Cookies.get('firstName')) {
+        router.push('/checkout/address')
+    }
+ }, [router]);
 
  if ( !shippingAdress) {
      return (<></>)
@@ -21,6 +33,22 @@ const SumaryPage = () => {
     
     const {firstName,lastName, address, address2 = '', city, country, zip, phone} = shippingAdress
     
+
+const onCreateOrder = async () => {
+    setisPosting(true)
+    const {hasError, message} = await createOrder() 
+
+    if (hasError ) {
+        setisPosting(false)
+        seterrorMessage(message)
+        return
+    }
+
+    router.replace(`/orders/${message}`)
+
+
+
+}
 
   return (
     <ShopLayout title={'Summary Shop'} 
@@ -62,12 +90,15 @@ const SumaryPage = () => {
                             </Box>
                           
                             <OrdenSummary />
-                            <Box sx={{ mt:3}}>
-                                <Button color='secondary' className='circular-btn' fullWidth>
+                            <Box sx={{ mt:3}} display={'flex'} flexDirection={'column'}>
+                                <Button color='secondary' className='circular-btn' fullWidth
+                                disabled = {isPosting}
+                                onClick={onCreateOrder}>
                                     Confirm
                                 </Button>
                             </Box>
-                        
+                            <Chip color='error' label={ errorMessage}
+                            sx={{ display: errorMessage? 'flex':'none',  mt: 1} } />
                        </CardContent>
                             
                         

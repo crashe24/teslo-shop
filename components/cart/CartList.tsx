@@ -5,6 +5,7 @@ import ItemCounter from "../ui/ItemCounter"
 import { FC, useContext } from "react"
 import { CartContext } from "@/context"
 import { ICart } from "@/interfaces"
+import { IOrderItem } from '../../interfaces/IOrder';
 
 
 // const productsInCart = [
@@ -14,10 +15,11 @@ import { ICart } from "@/interfaces"
 // ]
 
 interface Props{
-    editable?: boolean
+    editable?: boolean,
+    products?: IOrderItem[],
 }
 
-const CartList: FC<Props> = ({editable=false}) => {
+const CartList: FC<Props> = ({editable=false,  products = []}) => {
 
     const { cart, updateQuantityPRoduct,onRemoveProductInCart } = useContext(CartContext)
 
@@ -32,10 +34,13 @@ const CartList: FC<Props> = ({editable=false}) => {
 
         
     }
+
+    const productsToShow = products? products:cart
+
     return (
     <>
         {
-            cart.map( product => (
+            productsToShow.map( product => (
                 <Grid container spacing={2} key={product.slug + product.size} sx={{mb:1}}>
                     <Grid item xs={3}>
                         {/* llevar a la pagina del producto */}
@@ -61,7 +66,7 @@ const CartList: FC<Props> = ({editable=false}) => {
                                 <ItemCounter
                                     currenValue={product.quantity} 
                                     maxValues={10} 
-                                    updateCuantity={ (value)=> onNewCartQuantityValue(product, value)}
+                                    updateCuantity={ (value)=> onNewCartQuantityValue(product  as ICart, value)}
                                 />)
                                         : <Typography variant="h5">{product.quantity} {product.quantity>1?'products': 'product'}</Typography>
                             }
@@ -72,7 +77,7 @@ const CartList: FC<Props> = ({editable=false}) => {
                         <Typography>$ {`${ product.price}`}</Typography>
                         {
                                 editable&&  <Button variant='text' color='secondary'
-                                onClick={() => onRemoveProductInCartLocal(product)}
+                                onClick={() => onRemoveProductInCartLocal(product  as ICart)}
                                 >Remove</Button>
                                       
                             }

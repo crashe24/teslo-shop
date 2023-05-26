@@ -1,14 +1,17 @@
-import { tesloapi } from "@/apis";
-import AuthLayout from "@/components/layouts/AuthLayout";
-import { AuthContext } from "@/context";
-import { validations } from "@/utils";
-import { ErrorOutline } from "@mui/icons-material";
-import {Link, Box, Button, Grid, TextField, Typography, Chip } from "@mui/material";
-import axios from "axios";
+import { GetServerSideProps } from 'next'
 import NextLink from 'next/link'
-import { useRouter } from "next/router";
-import { useContext, useState } from "react";
+import {  useEffect, useState } from "react";
+//import axios from "axios";
+import { getSession, signIn, getProviders } from "next-auth/react";
 import { useForm } from "react-hook-form";
+
+import { useRouter } from "next/router";
+import { ErrorOutline } from "@mui/icons-material";
+import {Link, Box, Button, Grid, TextField, Typography, Chip, Divider } from "@mui/material";
+//import { tesloapi } from "@/apis";
+import AuthLayout from "@/components/layouts/AuthLayout";
+//import { AuthContext } from "@/context";
+import { validations } from "@/utils";
 
 
 type formData = {
@@ -19,31 +22,43 @@ type formData = {
 const LoginPage = () => {
 
     const router = useRouter()
-    const { register, handleSubmit, watch, formState: { errors } } = useForm<formData>();
+    const { register, handleSubmit,  formState: { errors } } = useForm<formData>();
 
     const [showError, setshowError] = useState(false);
-    const [destination, setdestination] = useState('/');
+    const [providers, setproviders] = useState<any>({});
+
+    useEffect(() => {
+        getProviders().then( p => {
+            setproviders(p)
+        })
+    }, []);
+
+
+    //const [destination, setdestination] = useState('/');
     
-    const { loginUser } = useContext(AuthContext)
+    //const { loginUser } = useContext(AuthContext)
 
     const onLoginUser = async (  {email, password}: formData) => {
        
         setshowError(false)
 
-        const isValidLogin = await loginUser(email, password)
+        await signIn('credentials', { email, password })
 
-        if(!isValidLogin) {
-            setshowError(true)
-            setTimeout(() => {
-                setshowError(false)
-            }, 3000);
-            return
-        }
+        /** autenticacion personalizada sin next auth */
+        // const isValidLogin = await loginUser(email, password)
+
+        // if(!isValidLogin) {
+        //     setshowError(true)
+        //     setTimeout(() => {
+        //         setshowError(false)
+        //     }, 3000);
+        //     return
+        // }
 
     
-            // todo navegar en que el usuario se encontraba
-            setdestination(router.query.p?.toString() || '/')
-            router.replace(destination)
+        //     // todo navegar en que el usuario se encontraba
+        //     setdestination(router.query.p?.toString() || '/')
+        //     router.replace(destination)
     }
 
    
@@ -103,12 +118,61 @@ const LoginPage = () => {
                             <Link underline="always" >Create a Count</Link>
                     </NextLink>
                     </Grid>
+                    {/* para las redes  sociales */}
+                    <Grid item xs={12} display={'flex'} flexDirection={'column'} justifyContent={'end'}>
+                        <Divider sx={{ width: '100%', mb: 2}} />
+                        {
+                            Object.values(providers).map( (pr:any) => {
 
+                                // eliminamos el de credential
+                                if(pr.id === 'credentials') return (<div key={'credentials'}></div>)
+
+                                    return (
+                                        <Button
+                                            key={pr.id}
+                                            variant='outlined'
+                                            fullWidth
+                                            color= "primary"
+                                            sx={{mb:1}}
+                                            onClick={ ()=> signIn( pr.id )}
+                                        >
+                                               {pr.name} 
+                                        </Button>
+                                    )
+                            })
+                        
+                        }
+                    </Grid>
           </Grid>
           </Box>
           </form>
     </AuthLayout>
   )
+}
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({req, query}) => {
+ 
+    const session = await getSession({req})
+    const { p = '/' } = query
+
+    if ( session ) {
+        return {
+            redirect: {
+                destination: p.toString(),
+                permanent: false
+            }
+        }
+    }
+
+
+    return {
+        props: {
+            
+        }
+    }
 }
 
 export default LoginPage;

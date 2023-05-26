@@ -1,14 +1,16 @@
-import { tesloapi } from "@/apis";
+import { useContext, useState } from "react";
+import { GetServerSideProps } from "next";
+import { getSession, signIn } from "next-auth/react";
+
+import NextLink from 'next/link'
+import { useRouter } from "next/router";
+import { useForm } from "react-hook-form";
+
+import { ErrorOutline } from "@mui/icons-material";
+import {Link, Box, Button, Grid, TextField, Typography, Chip } from "@mui/material";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import { AuthContext } from "@/context";
 import { validations } from "@/utils";
-import { ErrorOutline } from "@mui/icons-material";
-import {Link, Box, Button, Grid, TextField, Typography, Chip } from "@mui/material";
-import axios from "axios";
-import NextLink from 'next/link'
-import { useRouter } from "next/router";
-import { useContext, useState } from "react";
-import { useForm } from "react-hook-form";
 
 
 type formData = {
@@ -29,8 +31,9 @@ const RegisterPage = () => {
 
     const onRegisterForm = async ( {name, email,password}: formData) => {
         setshowError(false)
+       // console.log('password', password)
         const resp = await registerUser(name,email,password)
-
+       // console.log('resp -->', resp)
         if (resp.hasError) {
             setshowError(true)
             seterrorMessage( resp.message!)
@@ -42,8 +45,9 @@ const RegisterPage = () => {
 
 
         // todo navegar en que el usuario se encontraba
-        setdestination(router.query.p?.toString() || '/')
-        router.replace(destination)
+        await signIn('credentials', { email, password })
+        //setdestination(router.query.p?.toString() || '/')
+        //router.replace(destination)
     }
 
   return (
@@ -115,4 +119,29 @@ const RegisterPage = () => {
   )
 }
 
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({req, query}) => {
+ 
+    const session = await getSession({req})
+    //console.log('session', session)
+    const { p = '/' } = query
+
+    if ( session ) {
+        return {
+            redirect: {
+                destination: p.toString(),
+                permanent: false
+            }
+        }
+    }
+
+
+    return {
+        props: {
+            
+        }
+    }
+}
 export default RegisterPage;
